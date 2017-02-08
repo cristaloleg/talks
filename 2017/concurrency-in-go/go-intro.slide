@@ -1,0 +1,314 @@
+Concurrency in Go
+
+Oleg Kovalov, Spartez
+10 Feb 2017
+
+* Hello, Go
+
+.code code/hello/hello.go
+
+.image img/gopher_head.png
+
+: Hello, everyone. Today I'm going to talk about Go lang. Particularly about concurrency.
+
+: And here is small, 21st century ready, 'Hello, world'.
+
+* Agenda
+
+- Fast intro
+- Bad parts[citation needed]
+- Concurrency in 1 slide
+- Examples
+
+* Go in a few words
+
+- simple
+- fast
+- scalable
+- productive
+- modern
+
+: Hard to find positive words and not to be biased. 
+
+* Why it's simple™
+
+- sugar free WYSIWYG \ʕ◔ϖ◔ʔ/
+
+- tiny vocabulary
+
+- great stdlib
+
+* Why it's fast™
+
+- native code
+
+- GC isn't a bottleneck
+
+- `go fun()`
+
+- fast compilation
+	
+* Why it's scalable™
+
+- goroutines
+`Concurrency is not parallelism.` Rob Pike
+
+: Famous words by Rob Pike, one of the Go fathers. In a few words: you can create programms that do some stuff simultaneously.
+
+: And it's okay that you'll need to sync some data between threads/goroutines
+
+- channels
+`Do not communicate by sharing memory; instead share memory by communicating.` Rob Pike
+
+: And...that's a way to share data between threads /shrug
+
+: Threat channel as a queue of data, FIFO principle as it is.
+
+: I'll show examples a bit later.
+
+- a lot of stuff from 'sync' package
+
+: atomics, Mutex, Pool, WaitGroup, ...
+
+* Why it's productive™
+
+- great tools
+
+: Formatting, code analysis, profiling, testing, presenting(guess what drives this slides), race condition detector out of the box, depepndency tools on the way and so on
+
+- pure syntax and fast compilations
+
+- 
+
+* Why it's modern™
+
+- ¯\_(ツ)_/¯ 
+
+* Bad-ish™ parts
+
+- I heard you like exceptions
+	if err != nil {
+		panic("WOW DAT EROR VERY PANIC \\ʕ◔ϖ◔ʔ/")
+	}
+
+- interface{} along the way
+
+- GOPATH
+
+- strict compiler
+
+- package management
+
+- inspired by C, old ideas, no syntax sugar, too much verbose and so on...
+
+* 1 slide
+
+	// (1) anonymous goroutine declaration and execution
+	go func(ch chan int32) {
+
+		// (2) wait until something will come from a channel
+		value := <-ch
+
+		if value == 42 {
+			// (2.5) wait until something will come from a channel 
+			value += <-ch
+		}
+
+		// (3) sending value to the channel
+		ch <- value
+	}(c)
+
+: That's all folks. Here is a goroutine, here is a channel. Concurrent go as it is.
+
+: (1) A goroutine is a lightweight thread of execution.
+
+: Goroutine has it's own call stack, which can grow and shrink independently.
+
+: Cause it's cheap you can have thousands or even million goroutines if you're needed.
+
+: (2) Channels is a pipes which allows us to share data between goroutines in a safe way.
+
+: They might be buffered or unbuffered(aka blocked or unblocked).
+
+: Unbuffered will only accept sends (chan <-) if there is a corresponding receive (<- chan) ready to receive the sent value.
+
+: Buffered can accept a limited number of values without waiting a receiver.
+
+: (3) This operation might be blocked or not, deppends on the type of a channel.
+
+: Moving to the examples now.
+
+* Examples
+
+	func Generator(f func(int) string) <-chan string {
+		i, out := 0, make(chan string)
+		go func() {
+			for {
+				out <- f(i)
+				i++
+			}
+		}()
+		return out
+	}
+ 
+	func Broadcast(in <-chan string, out []chan<- string) {
+		for {
+			value := <-in
+
+			for _, ch := range out {
+				ch <- value
+			}
+		}
+	}
+
+: Generator: takes function as a param and sequentially returns value to the channel
+
+: Broadcast: takes in chan and array of out chans and sends everything to the out chans
+
+* Examples x2
+
+	func Merge(in []<-chan string) <-chan string {
+		out := make(chan string)
+		for _, ch := range in {
+			go func() {
+				for { out <- <-ch }
+			}()
+		}
+		return out
+	}
+ 
+	func Merge2(in1, in2 <-chan string) <-chan string {
+		out := make(chan string)
+		go func() {
+			for {
+				select {
+					case s := <-in1: out <- s
+					case s := <-in2: out <- s
+				}
+			}
+		}()
+		return out
+	}
+
+: Merge: sends all incomming values to only 1 chan 
+
+: Merge2: does the same but uses less goroutines via select statement
+
+* More interesting examples
+
+* Example: message broker
+
+.code code/message/message.go /START_DEFS/,/END_DEFS/
+
+: Basic defenitions for message broker example.
+
+: chan struct{} is a lightweight type that uses 0 bytes.
+
+* Publish, Subscribe methods
+
+.code code/message/message.go /START_PUBLISH/,/END_PUBLISH/
+
+.code code/message/message.go /START_SUBSCRIBE/,/END_SUBSCRIBE/
+
+: Lock, see if not avaliable than instantiate else do nothing. Unlock.
+
+: Lock, check if we've this post, add to the listeners. Unlock.
+
+* Notify subscribers
+
+.code code/message/message.go /START_NOTIFY/,/END_NOTIFY/
+
+: Lock. Check presence, than go through all of them in parallel. Unlock.
+
+* Sleep and Disconnect methods
+
+.code code/message/message.go /START_NEWCLIENT/,/END_NEWCLIENT/
+
+.code code/message/message.go /START_SLEEP/,/END_SLEEP/
+
+.code code/message/message.go /START_BYE/,/END_BYE/
+
+: We're just sending delay or disconnect values to the chans.
+
+: They're buffered, see instantiation make 1. So this will not block methods calls.
+
+* Listen method
+
+.code code/message/message.go /START_LISTEN/,/END_IMPL/
+
+: We're starting goroutine here and waiting for the value from any of 3 chans.
+
+* Example: web crawler
+
+.code code/crawler/crawler.go /START_CRAWL/,/END_CRAWL/
+
+* Example: search engine
+
+Based on a Rob's Pike presentation
+[[https://talks.golang.org/2012/concurrency.slide][Go Concurrency Patterns]]
+
+.code code/search/search.go /START_DEFS/,/END_DEFS/
+
+.code code/search/search.go /START_IMPL/,/END_IMPL/
+
+: Some basic defenitions, like a Result type and Search interface.
+
+: I haven't mentioned this before, but Go uses composition for inheritance.
+
+: And also the simpliest search implementation, treat this as a long running task.
+
+* Linear search
+
+.code code/search/search.go /START_LINEAR/,/END_LINEAR/
+
+: Okay, let's start with a simpliest search ever: linear.
+
+: We will run search for every system sequentially and then return all the results.
+
+: That's cool, but...slowly. This might work 4 * 100ms = uncool.png
+
+* Concurrent search
+
+.code code/search/search.go /START_CONC/,/END_CONC/
+
+: So let's make it concurrent: now every search request will be executed concurrectly.
+
+: Estimated duration is around 100ms, just the slowest request + some sync stuff.
+
+: Yeah, cool, but...suppose it's okay to fetch other data a bit later.
+
+: Read this as a `first bytes` unit.
+
+* Fast search
+.code code/search/search.go /START_FAST/,/END_FAST/
+
+: Now we're using the same code, but! now we will skip everything that is running longer than 78ms
+
+: Even better, isn't it? Yes, but not so good, yet. We still need to accomplish the query. 
+
+: What we can do now?
+
+* FirstOf search
+.code code/search/search.go /START_FIRST/,/END_FIRST/
+
+: Here is the simple function that will return the 1st result of all goroutines.
+
+: Let's see how to apply it to our search engine.
+
+* Smart search
+
+.code code/search/search.go /START_SMART/,/END_SMART/
+
+: And...that's all. Now we're just executing query for different servers/replicas/nodes/clusters.
+
+: Taking the 1st from each category and returning results to the user.
+
+: No locks. No condition variables. No callbacks. Awesome.
+
+* References
+
+- Go tour [[https://tour.golang.org][tour.golang.org]]
+- Effective Go [[https://golang.org/doc/effective_go.html][golang.org/doc/effective_go.html]]
+- Go FAQ [[https://golang.org/doc/faq][golang.org/doc/faq]]
+- Go by example [[https://gobyexample.com/][gobyexample.com]]
+- GitHub [[https://github.com][github.com]] too much repos to list them here ¯\_(ツ)_/¯
