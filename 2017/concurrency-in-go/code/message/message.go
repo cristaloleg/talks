@@ -43,7 +43,7 @@ func (b *Broker) Publish(post Post) {
 	b.Lock()
 
 	if _, ok := b.connections[post]; !ok {
-		b.connections[post] = make([]Feed, 0)
+		b.connections[post] = make([]Feed)
 	}
 
 	b.Unlock()

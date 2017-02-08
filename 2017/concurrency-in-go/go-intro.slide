@@ -46,8 +46,6 @@ Oleg Kovalov, Spartez
 
 - `go fun()`
 
-- fast compilation
-	
 * Why it's scalable™
 
 - goroutines
@@ -66,7 +64,7 @@ Oleg Kovalov, Spartez
 
 : I'll show examples a bit later.
 
-- a lot of stuff from 'sync' package
+- `Channels orchestrate; mutexes serialize` Rob Pike
 
 : atomics, Mutex, Pool, WaitGroup, ...
 
@@ -76,9 +74,9 @@ Oleg Kovalov, Spartez
 
 : Formatting, code analysis, profiling, testing, presenting(guess what drives this slides), race condition detector out of the box, depepndency tools on the way and so on
 
-- pure syntax and fast compilations
+- clean syntax and fast compilations
 
-- 
+- fast compilation
 
 * Why it's modern™
 
@@ -99,24 +97,24 @@ Oleg Kovalov, Spartez
 
 - package management
 
-- inspired by C, old ideas, no syntax sugar, too much verbose and so on...
+- inspired by C, old ideas, no syntax sugar, too verbose and so on...
 
 * 1 slide
 
-	// (1) anonymous goroutine declaration and execution
+	// (1) anonymous function executed in goroutine
 	go func(ch chan int32) {
 
-		// (2) wait until something will come from a channel
+		// (2) wait for the data from channel
 		value := <-ch
 
 		if value == 42 {
-			// (2.5) wait until something will come from a channel 
+			// (2.5) wait for the data from channel, once more
 			value += <-ch
 		}
-
-		// (3) sending value to the channel
-		ch <- value
 	}(c)
+
+	// (3) send value to the channel
+	ch <- value
 
 : That's all folks. Here is a goroutine, here is a channel. Concurrent go as it is.
 
@@ -151,7 +149,7 @@ Oleg Kovalov, Spartez
 		return out
 	}
  
-	func Broadcast(in <-chan string, out []chan<- string) {
+	func Broadcast(in <-chan string, out ...chan<- string) {
 		for {
 			value := <-in
 
@@ -167,7 +165,7 @@ Oleg Kovalov, Spartez
 
 * Examples x2
 
-	func Merge(in []<-chan string) <-chan string {
+	func Merge(in ...<-chan string) <-chan string {
 		out := make(chan string)
 		for _, ch := range in {
 			go func() {
