@@ -1,4 +1,4 @@
-package code
+package main
 
 import (
 	"errors"
@@ -43,7 +43,7 @@ func (b *Broker) Publish(post Post) {
 	b.Lock()
 
 	if _, ok := b.connections[post]; !ok {
-		b.connections[post] = make([]Feed)
+		b.connections[post] = make([]Feed, 0)
 	}
 
 	b.Unlock()
@@ -52,18 +52,17 @@ func (b *Broker) Publish(post Post) {
 // END_PUBLISH OMIT
 
 // START_SUBSCRIBE OMIT
-func (b *Broker) Subscribe(post Post, client Subscriber) error {
+func (b *Broker) Subscribe(post Post, client Subscriber) (err error) {
 	b.Lock()
+	defer b.Unlock()
 
 	queue, ok := b.connections[post]
 	if !ok {
-		b.Unlock()
 		return errors.New("no such post")
 	}
 	b.connections[post] = append(queue, client.Socket())
 
-	b.Unlock()
-	return nil
+	return
 }
 
 // END_SUBSCRIBE OMIT
@@ -79,17 +78,17 @@ func (b *Broker) Close(post Post) {
 // START_NOTIFY OMIT
 func (b *Broker) Notify(post Post, message Message) {
 	b.Lock()
+	defer b.Unlock()
 
 	queue, ok := b.connections[post]
 	if !ok {
-		b.Unlock()
 		return
 	}
 	for _, q := range queue {
-		go func(q Feed) { q <- message }(q)
+		go func(q Feed) {
+			q <- message
+		}(q)
 	}
-
-	b.Unlock()
 }
 
 // END_NOTIFY OMIT
@@ -142,7 +141,7 @@ func (c *Client) Listen() {
 				return
 
 			default:
-				// make a tea ¯\_(ツ)_/¯
+				time.Sleep(451 * time.Millisecond)
 			}
 		}
 	}()

@@ -1,4 +1,6 @@
-package code
+package main
+
+import "sync"
 
 // START_DEFS OMIT
 type Crawler interface {
@@ -38,27 +40,47 @@ func (b *BigBrother) Process(url string) string {
 // END_PROCESS OMIT
 
 // START_CRAWL OMIT
-func (b *BigBrother) NoNoJustVisiting(url string, f func(string)) {
+func (b *BigBrother) Crawl(url string, f func(string)) {
 	links := b.Extract(b.Process(url))
 	size := len(links)
-	choker := make(chan struct{}, 32)
 	wg := sync.WaitGroup{}
 
 	for i := 0; i < size; i++ {
-		choker <- struct{}
 		wg.Add(1)
 
-		go func(url string, wg sync.WaitGroup, choker <-chan struct{}) {
+		go func(url string) {
 			f(url)
 			
-			links := b.Extract(b.Process(url))
-			// whatever.DoWith(links)
+			wg.Done()
+		}(links[i])
+	}
+	wg.Wait()
+}
+// END_CRAWL OMIT
+
+// START_CRAWL2 OMIT
+func (b *BigBrother) CrawlBounded(url string, f func(string)) {
+	links := b.Extract(b.Process(url))
+	size := len(links)
+	wg := sync.WaitGroup{}
+	choker := make(chan struct{}, 32)
+
+	for i := 0; i < size; i++ {
+		choker <- struct{}{}
+		wg.Add(1)
+
+		go func(url string, choker <-chan struct{}) {
+			f(url)
 
 			<-choker
 			wg.Done()
-		}(links[i], &wg, choker)
+		}(links[i], choker)
 	}
 	wg.Wait()
 }
 
-// END_CRAWL OMIT
+// END_CRAWL2 OMIT
+
+func main() {
+	
+}

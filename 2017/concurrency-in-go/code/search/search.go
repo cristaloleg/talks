@@ -1,4 +1,4 @@
-package code
+package main
 
 import (
 	"math/rand"
@@ -29,8 +29,7 @@ var video, cctv, yourtube Video
 // START_IMPL OMIT
 func (search Web) Search(query string) Result {
 	time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
-	res := nil
-	return res
+	return Result{"..."}
 }
 
 // END_IMPL OMIT
@@ -55,8 +54,7 @@ func LinearSearch(query string) []Result {
 	var res []Result
 	res = append(res, web.Search(query))
 	res = append(res, maps.Search(query))
-	res = append(res, image.Search(query))
-	res = append(res, video.Search(query))
+	res = append(res, image.Search(query), video.Search(query))
 	return res
 }
 
@@ -138,3 +136,7 @@ func SmartSearch(query string) (res []Result) {
 }
 
 // END_SMART OMIT
+
+func main() {
+	LinearSearch("..")
+}
