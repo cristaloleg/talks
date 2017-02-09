@@ -29,7 +29,8 @@ func New(amount int32, jobs <-chan int, f func(int)) *WorkerPool {
 
 // START_START OMIT
 func (w *WorkerPool) Start() {
-    sz, w.sz := w.sz, 0
+    sz := w.sz
+    w.sz = 0
     for i := int32(1); i <= sz; i++ {
         w.invoke(i)
     }
@@ -82,24 +83,24 @@ func (w *WorkerPool) Wait() {
 
 // END_WAIT OMIT
 
+// START_MAIN OMIT
 func main() {
     jobs := make(chan int)
-    funn := func(i int) { time.Sleep(time.Duration(i) * time.Millisecond) }
-    pool := New(3, jobs, funn)
+    wait := func(i int) { time.Sleep(time.Duration(i) * time.Millisecond) }
+    pool := New(3, jobs, wait)
 
     pool.Start()
 
     go func() {
-        funn(1700)
+        wait(1700)
         println("oh no...")
         pool.Dec(2)
     }()
     go func() {
-        funn(10700)
+        wait(10700)
         println("OH MYYYYY!!! \\ʕ◔ϖ◔ʔ/")
         pool.Inc(8)
     }()
-
     for i := 1; i <= 100; i++ {
         jobs <- i
     }
@@ -107,3 +108,5 @@ func main() {
 
     pool.Wait()
 }
+
+// END_MAIN OMIT

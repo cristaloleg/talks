@@ -29,7 +29,7 @@ Oleg Kovalov, Spartez
 
 - tiny vocabulary
 
-- 
+- safe
 
 * Why it's fast™
 
@@ -165,13 +165,15 @@ Oleg Kovalov, Spartez
 
 .code code/worker/worker.go /START_START/,/END_START/
 
-* Stuff...
+* Invocation
 
 .code code/worker/worker.go /START_INVOKE/,/END_INVOKE/
 
-: .code code/worker/worker.go /START_DEC/,/END_DEC/
+.code code/worker/worker.go /START_WAIT/,/END_WAIT/
 
-: .code code/worker/worker.go /START_WAIT/,/END_WAIT/
+* Demo
+
+.play code/worker/worker.go /START_MAIN/,/END_MAIN/
 
 * Example: search engine
 
@@ -211,7 +213,7 @@ No locks. No condition variables. No callbacks. Awesome.
 - Go by example [[https://gobyexample.com/][gobyexample.com]]
 - GitHub [[https://github.com][github.com]] too much repos to list them here ¯\_(ツ)_/¯
 
-* MEMES
+* le fünf
 
 .image img/golang_lel.jpg
 
