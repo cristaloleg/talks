@@ -157,13 +157,21 @@ Oleg Kovalov, Spartez
 
 .code code/message/message.go /START_LISTEN/,/END_IMPL/
 
-* Example: web crawler
+* Example: worker pool
 
-.code code/crawler/crawler.go /START_CRAWL/,/END_CRAWL/
+.code code/worker/worker.go /START_POOL/,/END_POOL/
 
-* Example: web crawler choked
+.code code/worker/worker.go /START_INC/,/END_INC/
 
-.code code/crawler/crawler.go /START_CRAWL2/,/END_CRAWL2/
+.code code/worker/worker.go /START_START/,/END_START/
+
+* Stuff...
+
+.code code/worker/worker.go /START_INVOKE/,/END_INVOKE/
+
+: .code code/worker/worker.go /START_DEC/,/END_DEC/
+
+: .code code/worker/worker.go /START_WAIT/,/END_WAIT/
 
 * Example: search engine
 
