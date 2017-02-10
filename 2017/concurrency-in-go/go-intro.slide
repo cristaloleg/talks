@@ -62,7 +62,7 @@ Oleg Kovalov, Spartez
 
 - clean syntax
 
-* Bad-ish™ parts ~ More is
+* Bad-ish™ parts
 
 - I heard you like exceptions
 	if err != nil {
