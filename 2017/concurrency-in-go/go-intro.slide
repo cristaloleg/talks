@@ -65,6 +65,7 @@ Oleg Kovalov, Spartez
 * Bad-ish™ parts
 
 - I heard you like exceptions
+	_, err := io.ReadFrom("/dev/null")
 	if err != nil {
 		panic("WOW DAT EROR VERY PANIC \\ʕ◔ϖ◔ʔ/")
 	}
@@ -177,7 +178,7 @@ Oleg Kovalov, Spartez
 
 * Example: search engine
 
-Based on a Rob's Pike presentation
+Based on a Rob Pike's presentation
 [[https://talks.golang.org/2012/concurrency.slide][Go Concurrency Patterns]]
 
 .code code/search/search.go /START_DEFS/,/END_DEFS/
