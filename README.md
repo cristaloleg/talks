@@ -3,3 +3,6 @@
 | # | date | topic | slides | video |
 |---|------|-------|--------|-------|
 | 1 | 2017-02-10 | Concurrency in Go | https://goo.gl/nB4QXK | - |
+| 2 | 2018-09-25 | Go-critic | https://github.com/cristaloleg/talks/blob/master/2018/golang-warsaw-19/go-critic.pdf | - |
+| 3 | 2018-10-25 | Go-advices | https://github.com/cristaloleg/talks/blob/master/2018/gogoconf-krakow/go-advices.pdf | - |
+| 4 | 2018-10-25 | Go-advices | https://github.com/cristaloleg/talks/blob/master/2018/golang-warsaw-20/go-advices.pdf | - |
