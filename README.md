@@ -1,5 +1,7 @@
 # talks
 
+Repo archived, see https://speakerdeck.com/olegkovalov for all slides.
+
 | # | date | topic | slides | video |
 |---|------|-------|--------|-------|
 | 1 | 2017-02-10 | Concurrency in Go | [link](https://goo.gl/nB4QXK) | - |
